@@ -1,0 +1,254 @@
+///Problema 6
+///6.	Idem pentru şiruri ordonate de elemente de un tip neprecizat,
+/// prevăzut cu o ordine
+/// totală (şi cu operatorii relaţionali, operatorii de ordine fiind
+/// corespunzători respectivei ordini totale), cu supraîncărcarea
+/// operatorilor: =, ==, <, <=, >, >= (operatorii de ordine
+/// întorc 1 sau 0 conform ordonării lexicografice a operanzilor);
+/// + (reprezentând interclasarea);
+/// - (binar, care întoarce şirul obţinut prin scoaterea din "descăzut"
+/// ale elementelor şirului "scazator" care sunt în "descăzut);
+/// * (care pentru cei doi operanzi şiruri întoarce şirul ordonat al
+/// elementelor comune celor două şiruri, indiferent de poziţie);
+/// <<, >> ca la tema 5; conversia de la un obiect de tipul
+/// elementelor la un şir de lungime 1 şi conversia inversă de la un
+/// şir la primul său element. Se va programa construirea unui şir
+/// prin adăugarea succesivă la el (cu operatorul supraîncărcat +) a
+/// unor elemente citite, ceea ce revine la ordonarea prin inserţie
+/// simplă a elementelor citite. Şirurile se vor reprezenta ca
+/// vectori (adică pointeri la tipul elementelor), deci operatorul
+/// [ ] va fi cel predefinit pentru pointeri, nu trebuie supraîncărcat .
+
+
+
+#include <iostream>
+#include <vector>
+
+using std::cin;
+using std::cout;
+using std::endl;
+
+class Sir {
+    std::vector<char> v;
+
+public:
+    // Constructor fără argumente - eliminat pentru a evita apelul accidental
+     Sir() { }
+
+    // Constructor cu un caracter
+    explicit Sir(char c) {
+        v.push_back(c);
+    }
+
+    // Constructor cu un șir de caractere
+    explicit Sir(const char* str) {
+        int i = 0;
+        while (str[i] != '\0') {
+            v.push_back(str[i]);
+            ++i;
+        }
+    }
+
+    // Constructor de copiere
+    Sir(const Sir& copie) {
+        v = copie.v;
+    }
+
+    // Destructor
+    ~Sir() {
+        cout << "Apel Destructor" << endl;
+    }
+
+    // Setter pentru vector
+    void setSir(const std::vector<char>& SirNou) {
+        v = SirNou;
+    }
+
+    // Getter pentru vector
+    std::vector<char> getSir() const {
+        return v;
+    }
+
+    // Operatorul de atribuire
+    Sir& operator=(const Sir& other) {
+        if (this != &other) {
+            v = other.v;
+        }
+        return *this;
+    }
+
+    // Operatorul de adunare
+    Sir operator+(const Sir& other) const {
+        Sir result(*this);
+        result.v.insert(result.v.end(), other.v.begin(), other.v.end());
+        return result;
+    }
+
+    // Operatorul de scădere
+    Sir operator-(const Sir& other) const {
+        Sir result(*this);
+        bool isPrefix = true;
+
+        if (other.v.size() <= v.size()) {
+            for (size_t i = 0; i < other.v.size(); ++i) {
+                if (other.v[i] != v[i]) {
+                    isPrefix = false;
+                    break;
+                }
+            }
+
+            if (isPrefix) {
+                result.v.erase(result.v.begin(), result.v.begin() + other.v.size());
+            }
+        }
+
+        return result;
+    }
+
+    // Operatorul de înmulțire
+    Sir operator*(const Sir& other) const {
+        Sir result;
+        size_t minSize = std::min(v.size(), other.v.size());
+
+        for (size_t i = 0; i < minSize; ++i) {
+            if (v[i] == other.v[i]) {
+                result.v.push_back(v[i]);
+            }
+        }
+
+        return result;
+    }
+
+    // Operatorul de deplasare la stânga (<<)
+    Sir operator<<(int numPositions) const {
+        Sir result;
+
+        if (numPositions >= static_cast<int>(v.size())) {
+            // Dacă numărul de poziții este mai mare sau egal cu lungimea șirului,
+            // rezultatul va fi un șir gol
+            return result;
+        }
+
+        // Copiem elementele din vectorul original în vectorul rezultat,
+        // începând de la poziția numPositions
+        result.v.insert(result.v.end(), v.begin() + numPositions, v.end());
+
+        return result;
+    }
+
+    // Operatorul de deplasare la dreapta (>>)
+    Sir operator>>(int numPositions) const {
+        Sir result;
+
+        if (numPositions >= static_cast<int>(v.size())) {
+            // Daca numarul de pozitii este mai mare sau egal cu lungimea sirului,
+            // rezultatul va fi un șir gol
+            return result;
+        }
+
+        // Copiem elementele din vectorul original în vectorul rezultat,
+        // pana la poziția (v.size() - numPositions)
+        result.v.insert(result.v.end(), v.begin(), v.end() - numPositions);
+
+        return result;
+    }
+
+    // Operatorul de conversie de la un obiect Sir la un vector de lungime 1
+    operator std::vector<char>() const {
+        return std::vector<char>{v[0]};
+    }
+
+    // Operatorul de conversie de la un vector de lungime 1 la un obiect Sir
+    operator Sir() const {
+        return Sir{v[0]};
+    }
+};
+
+int main() {
+    Sir s1("Maria");
+    Sir s2('A');
+    Sir s3("Are");
+
+    cout << "s1 este ";
+    std::vector<char> sir1 = s1.getSir();
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : sir1) {
+        cout << c;
+    }
+
+    cout << endl;
+
+    cout << "s2 este ";
+    std::vector<char> copie = s2.getSir();
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : copie) {
+        cout << c;
+    }
+
+    cout << endl;
+
+    cout << "s3 este ";
+    std::vector<char> sir3 = s3.getSir();
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : sir3) {
+        cout << c;
+    }
+
+    cout << endl;
+
+    // Testăm operatorul de atribuire și operatorul de adunare
+    Sir s4 = s1 + s3;
+    cout << "s4 este ";
+    std::vector<char> adun = s4.getSir();
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : adun) {
+        cout << c;
+    }
+    cout << endl;
+
+    // Testăm operatorul de scădere
+    Sir s5 = s4 - s1;
+    cout << "s5 este ";
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : s5.getSir()) {
+        cout << c;
+    }
+
+    cout << endl;
+
+    // Testăm operatorul de înmulțire
+    Sir s6 = s1 * s3;
+    cout << "s6 (s1*s3) este ";
+
+    // Parcurgem vectorul și afișăm fiecare caracter
+    for (const auto& c : s6.getSir()) {
+        cout << c;
+    }
+
+    cout << endl;
+
+    int numPositions = 2;
+    Sir shiftedLeft = s1 << numPositions;
+
+    cout << "s1 << " << numPositions << ": ";
+    for (const auto& c : shiftedLeft.getSir()) {
+        cout << c;
+    }
+    cout << endl;
+
+    numPositions = 3;
+    Sir shiftedRight = s1 >> numPositions;
+
+    cout << "s1 >> " << numPositions << ": ";
+    for (const auto& c : shiftedRight.getSir()) {
+        cout << c;
+    }
+    cout << endl;
+
+    return 0;
+}
